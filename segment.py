@@ -10,7 +10,6 @@ list = [" ", "", "\n", ".", "/", "（", "）", "@", "-", "【", "】", "’", "
 global stopwords
 stopwords = [line.strip() for line in open('stopwords(new).txt', encoding='UTF-8').readlines()]
 stopwords += list
-# 用来存储分词后的的json
 global jsons_segmented
 jsons_segmented = set()
 
@@ -51,7 +50,7 @@ class segment_thread(threading.Thread):
 def main():
     if not os.path.exists('data/data_craw.json'):
         assert False
-    with open('data/data_craw.json', 'r', encoding='utf-8') as f:
+    with open('lab1-data/data_craw.json', 'r', encoding='utf-8') as f:
         json_list = [json.loads(line) for line in  f]
     length = len(json_list)
     # 4个线程
@@ -70,7 +69,7 @@ def main():
     thread3.join()
     thread4.join()
     # 将分词后的json写入文件
-    with open('data/preprocessed.json', 'w', encoding='utf-8') as f:
+    with open('lab1-data/preprocessed.json', 'w', encoding='utf-8') as f:
         for item in jsons_segmented:
             f.write(item + '\n')
 

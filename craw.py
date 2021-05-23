@@ -16,7 +16,6 @@ def get_urls():
     # 爬取今日哈工大公告公示页面列表中的url
     urls = ["http://today.hit.edu.cn/category/10?page={}".format(str(i)) for i in range(0, N)]
     url_set = set()
-    page = 10
     for url in urls:
         web_data = requests.get(url).text
         # 通过分析网页源码可以获知url列表的位置和结构
@@ -27,21 +26,18 @@ def get_urls():
             link = item.get("href")
             link = "http://today.hit.edu.cn" + link
             url_set.add(link)
-        page = page + 1
     return url_set
 
 def craw(urls):
-    # 根据爬取到的url列表爬取内容和附件
     url_list = urls
-    with open('data/data_craw.json', 'w', encoding='utf-8') as ff:
+    with open('lab1-data/data_craw.json', 'w', encoding='utf-8') as ff:
         for url in url_list:
             data = urllib.request.urlopen(url).read()
-            # 解码，忽略异常编码
             data2 = data.decode("utf-8")
             soup = BeautifulSoup(data2, 'html.parser')
             title = soup.select('h3')
             content = soup.select('p')
-            # 没有标题，跳过
+            #没有标题
             if len(title) == 0:
                 continue
             text = ""
@@ -49,10 +45,9 @@ def craw(urls):
                 con = content[i].get_text().strip()
                 if (len(con) != 0):
                     text += con
-            # 文章过短，跳过
+            #文章长度
             if len(text) < 100:
                 continue
-            # 只需要office文档
             file_urls = soup.find_all('span', {"class": "file--x-office-document"})
             names = []
             if len(file_urls):
@@ -62,11 +57,10 @@ def craw(urls):
                     names.append(file_name)
                     fileurl = file[0].get('href')
                     req = requests.get(fileurl, stream = True)
-                    # 在相应目录下写入附件
+                    #写入附件
                     with open('data/files/%s' % file_name, 'wb') as f:
                         for chunk in req.iter_content(chunk_size=128):
                             f.write(chunk)
-            # 存储
             data = {
                 "url": url,
                 "title": title[0].get_text().strip(),
@@ -93,8 +87,8 @@ class craw_thread(threading.Thread):
 def main():
     # 检查路径是否存在
     # 不存在则创建相应目录
-    if not os.path.exists("data/files"):
-        os.mkdir("data/files")
+    if not os.path.exists("lab1-data/files"):
+        os.mkdir("lab1-data/files")
     urls = get_urls()
     urls = list(urls)
     # print(urls)
@@ -115,7 +109,7 @@ def main():
     thread3.join()
     thread4.join()
     # 将爬取到的json写入文件
-    with open('data/data_craw.json', 'w', encoding='utf-8') as  f:
+    with open('lab1-data/data_craw.json', 'w', encoding='utf-8') as  f:
         for item in json_craw:
             f.write(item)
 
